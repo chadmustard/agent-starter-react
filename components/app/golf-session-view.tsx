@@ -21,12 +21,54 @@ import { ScorecardPanel } from './scorecard/scorecard-panel';
 export function GolfSessionView({
   ref,
   className,
-  ...sessionViewProps
+  style,
+  themeMode,
+  preConnectMessage,
+  supportsChatInput,
+  supportsVideoInput,
+  supportsScreenShare,
+  isPreConnectBufferEnabled,
+  audioVisualizerType,
+  audioVisualizerColor,
+  audioVisualizerColorShift,
+  audioVisualizerBarCount,
+  audioVisualizerGridRowCount,
+  audioVisualizerGridColumnCount,
+  audioVisualizerRadialBarCount,
+  audioVisualizerRadialRadius,
+  audioVisualizerWaveLineWidth,
 }: React.ComponentProps<'section'> & AgentSessionView_01Props) {
   const { scorecard } = useGolfScorecard();
 
+  // Only pass through the props AgentSessionView_01 actually declares. `motion.create` injects a
+  // `style` prop (and animates the ref'd DOM node imperatively) onto *this* component; if `style`
+  // (or other arbitrary section DOM props) were spread onto AgentSessionView_01 instead, its own
+  // inner `<section>` — not the one motion is animating — would be frozen at the initial variant
+  // (e.g. `opacity: 0`) since motion never touches that inner node.
+  const sessionViewProps: AgentSessionView_01Props = {
+    themeMode,
+    preConnectMessage,
+    supportsChatInput,
+    supportsVideoInput,
+    supportsScreenShare,
+    isPreConnectBufferEnabled,
+    audioVisualizerType,
+    audioVisualizerColor,
+    audioVisualizerColorShift,
+    audioVisualizerBarCount,
+    audioVisualizerGridRowCount,
+    audioVisualizerGridColumnCount,
+    audioVisualizerRadialBarCount,
+    audioVisualizerRadialRadius,
+    audioVisualizerWaveLineWidth,
+  };
+
   return (
-    <section ref={ref} className={cn('flex h-full w-full flex-col lg:flex-row', className)}>
+    <section
+      ref={ref}
+      style={style}
+      className={cn('flex h-full w-full flex-col lg:flex-row', className)}
+    >
       <div
         className={cn(
           'relative min-h-0 flex-1',
