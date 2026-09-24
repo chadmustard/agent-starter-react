@@ -3,11 +3,11 @@
 import { useTheme } from 'next-themes';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAgent, useSessionContext } from '@livekit/components-react';
-import { AgentSessionView_01 } from '@/components/agents-ui/blocks/agent-session-view-01';
+import { GolfSessionView } from '@/components/app/golf-session-view';
 import { WelcomeView } from '@/components/app/welcome-view';
 
 const MotionWelcomeView = motion.create(WelcomeView);
-const MotionSessionView = motion.create(AgentSessionView_01);
+const MotionSessionView = motion.create(GolfSessionView);
 
 const VIEW_MOTION_PROPS = {
   variants: {
@@ -43,7 +43,7 @@ export function ViewController({ isVideoInputSupported }: ViewControllerProps) {
         <MotionWelcomeView
           key="welcome"
           {...VIEW_MOTION_PROPS}
-          startButtonText="Start call"
+          startButtonText="Log my round"
           onStartCall={start}
         />
       )}
@@ -53,7 +53,9 @@ export function ViewController({ isVideoInputSupported }: ViewControllerProps) {
           key="session-view"
           {...VIEW_MOTION_PROPS}
           preConnectMessage={
-            agent.isConnected ? 'Agent is listening, ask it a question' : 'Waiting for agent'
+            agent.isConnected
+              ? 'Your caddie is listening. Which course did you play?'
+              : 'Waiting for your caddie'
           }
           supportsChatInput={true}
           supportsVideoInput={isVideoInputSupported}
