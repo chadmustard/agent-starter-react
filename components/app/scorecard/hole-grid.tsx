@@ -41,6 +41,21 @@ function formatNullable(value: number | null): string {
   return value === null ? '' : String(value);
 }
 
+/** Whether a hole has been recorded (has a stroke count). Cells for per-shot stats (fairway,
+ *  green) are gated on this rather than their own field, since e.g. a par-3's fairway is legitimately
+ *  null even once the hole is recorded. */
+function isRecorded(hole: GolfHole): boolean {
+  return hole.strokes !== null;
+}
+
+/** Renders `value`, or an empty string when it isn't known yet (summary not underway, hole not
+ *  recorded). Always keeping the `FlashOnChange` wrapper mounted (rather than swapping between it
+ *  and a bare '') is what lets the null -> value transition register as a change instead of a
+ *  fresh mount, so newly-recorded cells flash instead of silently skipping their first highlight. */
+function subtotalCell(value: number | null): ReactNode {
+  return <FlashOnChange value={value}>{value === null ? '' : value}</FlashOnChange>;
+}
+
 interface DataRowProps {
   label: string;
   groups: NineGroup[];
@@ -48,6 +63,9 @@ interface DataRowProps {
   renderHole: (hole: GolfHole) => ReactNode;
   renderSubtotal: (group: NineGroup) => ReactNode;
   renderTotal: () => ReactNode;
+  /** Smaller text for dense rows (Yards, Handicap) that don't need the base size to stay legible;
+   *  this is part of fitting a full 18-hole round without horizontal scroll at 1440px. */
+  compact?: boolean;
 }
 
 function DataRow({
@@ -57,9 +75,10 @@ function DataRow({
   renderHole,
   renderSubtotal,
   renderTotal,
+  compact = false,
 }: DataRowProps) {
   return (
-    <tr>
+    <tr className={compact ? 'text-xs' : undefined}>
       <th scope="row" className={LABEL_CELL_CLASS}>
         {label}
       </th>
@@ -73,7 +92,7 @@ function DataRow({
               <td
                 key={hole.number}
                 className={cn(
-                  'min-w-8 px-2 py-1.5 text-center tabular-nums',
+                  'min-w-8 px-1 py-1.5 text-center tabular-nums',
                   isNextHole && 'bg-primary/10',
                   dim && 'text-muted-foreground/70'
                 )}
@@ -82,12 +101,12 @@ function DataRow({
               </td>
             );
           })}
-          <td className={cn('min-w-8 px-2 py-1.5 text-center tabular-nums', SUBTOTAL_CELL_CLASS)}>
+          <td className={cn('min-w-8 px-1 py-1.5 text-center tabular-nums', SUBTOTAL_CELL_CLASS)}>
             {renderSubtotal(group)}
           </td>
         </Fragment>
       ))}
-      <td className={cn('min-w-8 px-2 py-1.5 text-center tabular-nums', SUBTOTAL_CELL_CLASS)}>
+      <td className={cn('min-w-8 px-1 py-1.5 text-center tabular-nums', SUBTOTAL_CELL_CLASS)}>
         {renderTotal()}
       </td>
     </tr>
@@ -124,7 +143,7 @@ export function HoleGrid({ scorecard, className }: HoleGridProps) {
                       data-next-hole={isNextHole ? 'true' : undefined}
                       aria-current={isNextHole ? 'step' : undefined}
                       className={cn(
-                        'min-w-8 px-2 py-1.5 text-center font-medium tabular-nums',
+                        'min-w-8 px-1 py-1.5 text-center font-medium tabular-nums',
                         isNextHole && 'bg-primary/10 ring-primary ring-2 ring-inset'
                       )}
                     >
@@ -134,13 +153,13 @@ export function HoleGrid({ scorecard, className }: HoleGridProps) {
                 })}
                 <th
                   scope="col"
-                  className={cn('min-w-8 px-2 py-1.5 text-center', SUBTOTAL_CELL_CLASS)}
+                  className={cn('min-w-8 px-1 py-1.5 text-center', SUBTOTAL_CELL_CLASS)}
                 >
                   {group.label}
                 </th>
               </Fragment>
             ))}
-            <th scope="col" className={cn('min-w-8 px-2 py-1.5 text-center', SUBTOTAL_CELL_CLASS)}>
+            <th scope="col" className={cn('min-w-8 px-1 py-1.5 text-center', SUBTOTAL_CELL_CLASS)}>
               Total
             </th>
           </tr>
@@ -161,6 +180,7 @@ export function HoleGrid({ scorecard, className }: HoleGridProps) {
             renderHole={(hole) => formatNullable(hole.yardage)}
             renderSubtotal={(group) => formatNullable(sumHoles(group.holes, 'yardage'))}
             renderTotal={() => formatNullable(sumHoles(scorecard.holes, 'yardage'))}
+            compact
           />
           <DataRow
             label="Handicap"
@@ -169,56 +189,47 @@ export function HoleGrid({ scorecard, className }: HoleGridProps) {
             renderHole={(hole) => formatNullable(hole.handicap)}
             renderSubtotal={() => ''}
             renderTotal={() => ''}
+            compact
           />
           <DataRow
             label="Score"
             groups={groups}
             nextHoleNumber={nextHoleNumber}
-            renderHole={(hole) =>
-              hole.strokes === null ? null : (
-                <FlashOnChange value={hole.strokes}>
+            renderHole={(hole) => (
+              <FlashOnChange value={hole.strokes}>
+                {isRecorded(hole) && (
                   <ScoreMark strokes={hole.strokes} scoreToPar={holeScoreToPar(hole)} />
-                </FlashOnChange>
-              )
+                )}
+              </FlashOnChange>
+            )}
+            renderSubtotal={(group) =>
+              subtotalCell(summaryValue(summary, nineSummaryFor(summary, group.nine)?.strokes))
             }
-            renderSubtotal={(group) => {
-              const value = summaryValue(summary, nineSummaryFor(summary, group.nine)?.strokes);
-              return value === null ? '' : <FlashOnChange value={value}>{value}</FlashOnChange>;
-            }}
-            renderTotal={() => {
-              const value = summaryValue(summary, summary?.total_strokes);
-              return value === null ? '' : <FlashOnChange value={value}>{value}</FlashOnChange>;
-            }}
+            renderTotal={() => subtotalCell(summaryValue(summary, summary?.total_strokes))}
           />
           <DataRow
             label="Putts"
             groups={groups}
             nextHoleNumber={nextHoleNumber}
-            renderHole={(hole) =>
-              hole.putts === null ? null : (
-                <FlashOnChange value={hole.putts}>{hole.putts}</FlashOnChange>
-              )
+            renderHole={(hole) => (
+              <FlashOnChange value={hole.putts}>{hole.putts !== null && hole.putts}</FlashOnChange>
+            )}
+            renderSubtotal={(group) =>
+              subtotalCell(summaryValue(summary, nineSummaryFor(summary, group.nine)?.putts))
             }
-            renderSubtotal={(group) => {
-              const value = summaryValue(summary, nineSummaryFor(summary, group.nine)?.putts);
-              return value === null ? '' : <FlashOnChange value={value}>{value}</FlashOnChange>;
-            }}
-            renderTotal={() => {
-              const value = summaryValue(summary, summary?.total_putts);
-              return value === null ? '' : <FlashOnChange value={value}>{value}</FlashOnChange>;
-            }}
+            renderTotal={() => subtotalCell(summaryValue(summary, summary?.total_putts))}
           />
           <DataRow
             label="Fairway"
             groups={groups}
             nextHoleNumber={nextHoleNumber}
-            renderHole={(hole) =>
-              hole.strokes === null ? null : (
-                <FlashOnChange value={hole.fairway}>
+            renderHole={(hole) => (
+              <FlashOnChange value={`${hole.strokes}|${hole.fairway}`}>
+                {isRecorded(hole) && (
                   <ShotResultCell result={hole.fairway} notApplicable={hole.par === 3} />
-                </FlashOnChange>
-              )
-            }
+                )}
+              </FlashOnChange>
+            )}
             renderSubtotal={() => ''}
             renderTotal={() =>
               summary === null ? '' : `${summary.fairways_hit}/${summary.fairways_possible}`
@@ -228,13 +239,11 @@ export function HoleGrid({ scorecard, className }: HoleGridProps) {
             label="Green"
             groups={groups}
             nextHoleNumber={nextHoleNumber}
-            renderHole={(hole) =>
-              hole.strokes === null ? null : (
-                <FlashOnChange value={hole.green}>
-                  <ShotResultCell result={hole.green} />
-                </FlashOnChange>
-              )
-            }
+            renderHole={(hole) => (
+              <FlashOnChange value={`${hole.strokes}|${hole.green}`}>
+                {isRecorded(hole) && <ShotResultCell result={hole.green} />}
+              </FlashOnChange>
+            )}
             renderSubtotal={() => ''}
             renderTotal={() =>
               summary === null ? '' : `${summary.greens_hit}/${summary.greens_possible}`

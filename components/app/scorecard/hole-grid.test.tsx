@@ -154,4 +154,39 @@ describe('HoleGrid', () => {
       'Total',
     ]);
   });
+
+  it('flashes a hole cell that goes from unrecorded to recorded, but not on initial mount', () => {
+    const { container, rerender } = render(<HoleGrid scorecard={NINE_HOLES_FROM_TEN} />);
+
+    // Nothing should be flashing right after the initial mount, including already-recorded holes.
+    expect(container.querySelector('[data-flash]')).not.toBeInTheDocument();
+
+    const scoreIndex = getColumnIndex(container, '15');
+    const scoreCell = () => getRow('Score').querySelectorAll('th, td')[scoreIndex];
+
+    // Hole 15 starts unrecorded: no score mark yet.
+    expect(scoreCell()?.textContent).toBe('');
+
+    const holeNumber = 15;
+    const recordedHoles = NINE_HOLES_FROM_TEN.holes.map((hole) =>
+      hole.number === holeNumber
+        ? {
+            ...hole,
+            strokes: 4,
+            putts: 2,
+            fairway: 'hit' as const,
+            green: 'hit' as const,
+            score_to_par: 0,
+          }
+        : hole
+    );
+    rerender(<HoleGrid scorecard={{ ...NINE_HOLES_FROM_TEN, holes: recordedHoles }} />);
+
+    // Recording the hole should flash its Score cell, and only that cell.
+    expect(scoreCell()?.querySelector('[data-flash="true"]')).not.toBeNull();
+
+    const untouchedHoleIndex = getColumnIndex(container, '10');
+    const untouchedScoreCell = getRow('Score').querySelectorAll('th, td')[untouchedHoleIndex];
+    expect(untouchedScoreCell?.querySelector('[data-flash="true"]')).toBeNull();
+  });
 });

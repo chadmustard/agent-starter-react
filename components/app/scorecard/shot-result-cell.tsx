@@ -35,7 +35,14 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 export function ShotResultCell({ result, notApplicable = false, className }: ShotResultCellProps) {
   if (notApplicable) {
     return (
-      <span aria-label="Not applicable" className={cn('text-muted-foreground', className)}>
+      <span
+        role="img"
+        aria-label="Not applicable"
+        className={cn(
+          'text-muted-foreground inline-flex items-center justify-center leading-none',
+          className
+        )}
+      >
         —
       </span>
     );
@@ -45,7 +52,11 @@ export function ShotResultCell({ result, notApplicable = false, className }: Sho
 
   if (result === 'hit') {
     return (
-      <span aria-label="Hit" className={cn('inline-flex items-center justify-center', className)}>
+      <span
+        role="img"
+        aria-label="Hit"
+        className={cn('inline-flex items-center justify-center', className)}
+      >
         <CheckIcon weight="bold" className="text-primary size-4" />
       </span>
     );
@@ -54,6 +65,7 @@ export function ShotResultCell({ result, notApplicable = false, className }: Sho
   const Icon = DIRECTION_ICON[result];
   return (
     <span
+      role="img"
       aria-label={DIRECTION_LABEL[result]}
       className={cn('inline-flex items-center justify-center', className)}
     >

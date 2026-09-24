@@ -83,7 +83,7 @@ export function GolfSessionView({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="bg-background lg:border-border min-h-0 flex-1 overflow-y-auto p-4 md:p-6 md:pt-20 lg:w-[min(56rem,60%)] lg:flex-none lg:border-l"
+          className="bg-background lg:border-border min-h-0 flex-1 overflow-y-auto p-4 md:p-6 lg:w-[min(56rem,60%)] lg:flex-none lg:border-l lg:pt-20 xl:w-[min(64rem,64%)]"
         >
           <ScorecardPanel scorecard={scorecard} />
         </motion.aside>

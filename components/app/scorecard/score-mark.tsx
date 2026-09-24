@@ -30,6 +30,7 @@ export function ScoreMark({ strokes, scoreToPar, className }: ScoreMarkProps) {
 
   return (
     <span
+      role="img"
       data-mark={kind ?? undefined}
       aria-label={label}
       className={cn(

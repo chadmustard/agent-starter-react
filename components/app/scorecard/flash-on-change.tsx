@@ -24,6 +24,7 @@ export function FlashOnChange({ value, children, className }: FlashOnChangeProps
   const hasMountedRef = useRef(false);
   const previousValueRef = useRef(value);
   const [flashToken, setFlashToken] = useState(0);
+  const [isFlashing, setIsFlashing] = useState(false);
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -34,6 +35,7 @@ export function FlashOnChange({ value, children, className }: FlashOnChangeProps
     if (!Object.is(previousValueRef.current, value)) {
       previousValueRef.current = value;
       setFlashToken((token) => token + 1);
+      setIsFlashing(true);
     }
   }, [value]);
 
@@ -42,6 +44,9 @@ export function FlashOnChange({ value, children, className }: FlashOnChangeProps
   return (
     <motion.span
       key={flashToken}
+      // Exposed for tests/tooling: reflects whether this element is currently mid-flash
+      // (present the instant a change is detected, cleared once the highlight animation ends).
+      data-flash={isFlashing ? 'true' : undefined}
       className={cn('inline-block rounded-sm', className)}
       initial={
         shouldFlash
@@ -50,6 +55,7 @@ export function FlashOnChange({ value, children, className }: FlashOnChangeProps
       }
       animate={{ backgroundColor: FLASH_TINT_TRANSPARENT, scale: 1 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
+      onAnimationComplete={() => setIsFlashing(false)}
     >
       {children}
     </motion.span>
