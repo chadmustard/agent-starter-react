@@ -16,7 +16,7 @@ export interface ShotResultCellProps {
   className?: string;
 }
 
-const DIRECTION_ICON: Record<Direction, typeof ArrowLeftIcon> = {
+export const DIRECTION_ICON: Record<Direction, typeof ArrowLeftIcon> = {
   left: ArrowLeftIcon,
   right: ArrowRightIcon,
   short: ArrowDownIcon,

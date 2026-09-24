@@ -68,7 +68,7 @@ export const DIRECTIONS: readonly Direction[] = ['left', 'right', 'short', 'long
 
 const ROUND_STATUSES: readonly RoundStatus[] = ['setup', 'in_progress', 'complete'];
 
-const STATUS_PILL_TEXT: Record<RoundStatus, string> = {
+export const STATUS_PILL_TEXT: Record<RoundStatus, string> = {
   setup: 'Setting up',
   in_progress: 'In progress',
   complete: 'Complete',
