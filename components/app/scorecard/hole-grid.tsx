@@ -212,7 +212,10 @@ export function HoleGrid({ scorecard, className }: HoleGridProps) {
             groups={groups}
             nextHoleNumber={nextHoleNumber}
             renderHole={(hole) => (
-              <FlashOnChange value={hole.putts}>{hole.putts !== null && hole.putts}</FlashOnChange>
+              <FlashOnChange value={hole.putts}>
+                {isRecorded(hole) &&
+                  (hole.putts !== null ? hole.putts : <ShotResultCell result={null} unknown />)}
+              </FlashOnChange>
             )}
             renderSubtotal={(group) =>
               subtotalCell(summaryValue(summary, nineSummaryFor(summary, group.nine)?.putts))
@@ -226,7 +229,11 @@ export function HoleGrid({ scorecard, className }: HoleGridProps) {
             renderHole={(hole) => (
               <FlashOnChange value={`${hole.strokes}|${hole.fairway}`}>
                 {isRecorded(hole) && (
-                  <ShotResultCell result={hole.fairway} notApplicable={hole.par === 3} />
+                  <ShotResultCell
+                    result={hole.fairway}
+                    notApplicable={hole.par === 3}
+                    unknown={hole.par !== 3 && hole.fairway === null}
+                  />
                 )}
               </FlashOnChange>
             )}
@@ -241,7 +248,9 @@ export function HoleGrid({ scorecard, className }: HoleGridProps) {
             nextHoleNumber={nextHoleNumber}
             renderHole={(hole) => (
               <FlashOnChange value={`${hole.strokes}|${hole.green}`}>
-                {isRecorded(hole) && <ShotResultCell result={hole.green} />}
+                {isRecorded(hole) && (
+                  <ShotResultCell result={hole.green} unknown={hole.green === null} />
+                )}
               </FlashOnChange>
             )}
             renderSubtotal={() => ''}

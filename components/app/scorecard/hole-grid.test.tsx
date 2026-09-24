@@ -189,4 +189,23 @@ describe('HoleGrid', () => {
     const untouchedScoreCell = getRow('Score').querySelectorAll('th, td')[untouchedHoleIndex];
     expect(untouchedScoreCell?.querySelector('[data-flash="true"]')).toBeNull();
   });
+
+  it('renders "?" for putts/fairway/green the golfer didn\'t remember on a recorded par 4', () => {
+    // Hole 10 is a recorded par 4 (fairway 'hit', green 'hit', putts 2 in the fixture);
+    // null these out to simulate a hole the golfer recorded but couldn't recall the details of.
+    const holesWithUnrememberedTen = NINE_HOLES_FROM_TEN.holes.map((hole) =>
+      hole.number === 10 ? { ...hole, putts: null, fairway: null, green: null } : hole
+    );
+    render(<HoleGrid scorecard={{ ...NINE_HOLES_FROM_TEN, holes: holesWithUnrememberedTen }} />);
+
+    expect(screen.getAllByLabelText('Not remembered')).toHaveLength(3);
+  });
+
+  it('keeps "Not applicable" for a recorded par 3\'s fairway (not "Not remembered")', () => {
+    // Hole 12 in the fixture is a recorded par 3 with fairway: null already.
+    render(<HoleGrid scorecard={NINE_HOLES_FROM_TEN} />);
+
+    expect(screen.getByLabelText('Not applicable')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Not remembered')).not.toBeInTheDocument();
+  });
 });

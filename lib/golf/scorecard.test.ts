@@ -215,4 +215,15 @@ describe('formatScorecardText', () => {
     const firstHoleLineIndex = text.indexOf('Hole');
     expect(inIndex).toBeLessThan(firstHoleLineIndex === -1 ? Infinity : firstHoleLineIndex + 100);
   });
+
+  it('shows "?" for a recorded hole\'s unremembered putts', () => {
+    const holesWithUnrememberedPutts = NINE_HOLES_FROM_TEN.holes.map((hole) =>
+      hole.number === 10 ? { ...hole, putts: null } : hole
+    );
+    const text = formatScorecardText({
+      ...NINE_HOLES_FROM_TEN,
+      holes: holesWithUnrememberedPutts,
+    });
+    expect(text).toContain('?');
+  });
 });

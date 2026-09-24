@@ -13,6 +13,8 @@ export interface ShotResultCellProps {
   result: ShotResult | null;
   /** True when the shot doesn't apply to this hole (e.g. fairway on a par 3). */
   notApplicable?: boolean;
+  /** True when the hole was recorded but the golfer didn't remember this detail. */
+  unknown?: boolean;
   className?: string;
 }
 
@@ -31,8 +33,14 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 };
 
 /** Renders a fairway/green shot result: a check for a hit, a directional arrow for a miss,
- *  an em dash for holes where the shot doesn't apply, or nothing when not recorded. */
-export function ShotResultCell({ result, notApplicable = false, className }: ShotResultCellProps) {
+ *  an em dash for holes where the shot doesn't apply, a "?" for a recorded hole the golfer
+ *  didn't remember the detail for, or nothing when not recorded. */
+export function ShotResultCell({
+  result,
+  notApplicable = false,
+  unknown = false,
+  className,
+}: ShotResultCellProps) {
   if (notApplicable) {
     return (
       <span
@@ -44,6 +52,21 @@ export function ShotResultCell({ result, notApplicable = false, className }: Sho
         )}
       >
         —
+      </span>
+    );
+  }
+
+  if (unknown) {
+    return (
+      <span
+        role="img"
+        aria-label="Not remembered"
+        className={cn(
+          'text-muted-foreground inline-flex items-center justify-center leading-none',
+          className
+        )}
+      >
+        ?
       </span>
     );
   }

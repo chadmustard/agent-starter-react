@@ -203,6 +203,13 @@ function formatCell(value: number | null): string {
   return value === null ? '-' : String(value);
 }
 
+/** Putts cell for the text export: "-" when the hole isn't recorded, "?" when it's recorded but
+ *  the golfer didn't remember, otherwise the count. */
+function formatPuttsCell(hole: GolfHole): string {
+  if (hole.strokes === null) return '-';
+  return hole.putts === null ? '?' : String(hole.putts);
+}
+
 function padLabel(label: string): string {
   return label.padEnd(6);
 }
@@ -255,7 +262,7 @@ function formatNineBlock(group: NineGroup, card: GolfScorecard): string[] {
     padCell(formatCell(nineSummary?.strokes ?? null));
   const puttsRow =
     padLabel('Putts') +
-    group.holes.map((h) => padCell(formatCell(h.putts))).join('') +
+    group.holes.map((h) => padCell(formatPuttsCell(h))).join('') +
     padCell(formatCell(nineSummary?.putts ?? null));
 
   return [holeRow, parRow, scoreRow, puttsRow];
